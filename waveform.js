@@ -116,6 +116,30 @@ class WaveformVisualizer {
         // Initialize visualizer
         this.setupCanvas();
         window.addEventListener('resize', () => this.setupCanvas());
+
+        // Initialize audio source as null
+        this.source = null;
+        this.currentBuffer = null;
+        
+        // Hide file input and show only the label
+        const audioInput = document.getElementById('audioInput');
+        audioInput.style.display = 'none';
+
+        // Add status message element
+        this.statusMessage = document.getElementById('statusMessage');
+        
+        // Add loading state to file input label
+        this.fileInputLabel = document.querySelector('.file-input-label');
+        this.originalLabelText = this.fileInputLabel.textContent;
+        
+        // Initialize audio context with error handling
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.showStatus('Audio system initialized', 'success');
+        } catch (error) {
+            this.showStatus('Failed to initialize audio system. Please try using a different browser.', 'error');
+            console.error('Audio Context Error:', error);
+        }
     }
 
     setupCanvas() {
@@ -129,47 +153,121 @@ class WaveformVisualizer {
             const file = e.target.files[0];
             if (!file) return;
 
-            const arrayBuffer = await file.arrayBuffer();
-            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-            this.loadAudioBuffer(audioBuffer);
+            // Validate file type
+            if (!file.type.startsWith('audio/')) {
+                this.showStatus('Please select a valid audio file', 'error');
+                return;
+            }
+
+            // Show loading state
+            this.fileInputLabel.classList.add('loading');
+            this.fileInputLabel.innerHTML = `Loading ${file.name} <span class="loading-indicator"></span>`;
+
+            try {
+                // Resume audio context if suspended
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                    this.showStatus('Audio resumed', 'success');
+                }
+
+                const arrayBuffer = await file.arrayBuffer();
+                const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                
+                // Stop any existing playback
+                if (this.source) {
+                    try {
+                        this.source.stop();
+                    } catch (e) {
+                        // Ignore if source was already stopped
+                    }
+                }
+                
+                this.loadAudioBuffer(audioBuffer);
+                this.showStatus(`Loaded: ${file.name}`, 'success');
+            } catch (error) {
+                console.error('Error loading audio file:', error);
+                this.showStatus('Error loading audio file. Please try another file.', 'error');
+            } finally {
+                // Reset file input label
+                this.fileInputLabel.classList.remove('loading');
+                this.fileInputLabel.textContent = this.originalLabelText;
+            }
         });
     }
 
     setupControls() {
-        this.playBtn.addEventListener('click', () => {
-            if (this.audioContext.state === 'suspended') {
-                this.audioContext.resume();
+        this.playBtn.addEventListener('click', async () => {
+            if (!this.source || !this.currentBuffer) {
+                this.showStatus('Please select an audio file first', 'error');
+                return;
             }
-            this.startTime = this.audioContext.currentTime - this.pausedTime;
-            this.source.start(0, this.pausedTime);
-            this.playBtn.disabled = true;
-            this.isPlaying = true;
+            
+            try {
+                // Resume audio context if suspended
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+                
+                // Create new source if needed
+                if (!this.source || this.source.playbackState === 'finished') {
+                    this.source = this.audioContext.createBufferSource();
+                    this.source.buffer = this.currentBuffer;
+                    this.source.loop = this.loopToggle.checked;
+                    this.source.playbackRate.value = parseFloat(this.playbackSpeedControl.value);
+                    this.source.connect(this.analyser);
+                }
+                
+                this.startTime = this.audioContext.currentTime - this.pausedTime;
+                this.source.start(0, this.pausedTime);
+                this.isPlaying = true;
+                this.playBtn.disabled = true;
+                this.pauseBtn.disabled = false;
+                
+                // Add ended event listener for non-looping playback
+                if (!this.source.loop) {
+                    this.source.addEventListener('ended', () => {
+                        this.playBtn.disabled = false;
+                        this.pauseBtn.disabled = true;
+                        this.isPlaying = false;
+                        this.pausedTime = 0;
+                        this.updateTimer();
+                        this.showStatus('Playback finished', 'info');
+                    });
+                }
 
-            // Add ended event listener for non-looping playback
-            if (!this.source.loop) {
-                this.source.addEventListener('ended', () => {
-                    this.playBtn.disabled = false;
-                    this.isPlaying = false;
-                    this.pausedTime = 0;
-                    this.updateTimer();
-                });
+                this.showStatus('Playing', 'success');
+            } catch (error) {
+                console.error('Error playing audio:', error);
+                this.showStatus('Error playing audio. Please try reloading the page.', 'error');
             }
         });
 
         this.pauseBtn.addEventListener('click', () => {
-            this.audioContext.suspend();
-            this.pausedTime = this.audioContext.currentTime - this.startTime;
-            this.playBtn.disabled = false;
-            this.isPlaying = false;
+            try {
+                this.audioContext.suspend();
+                this.pausedTime = this.audioContext.currentTime - this.startTime;
+                this.playBtn.disabled = false;
+                this.isPlaying = false;
+                this.showStatus('Paused', 'info');
+            } catch (error) {
+                console.error('Error pausing audio:', error);
+                this.showStatus('Error pausing playback', 'error');
+            }
         });
 
         this.stopBtn.addEventListener('click', () => {
-            this.audioContext.suspend();
-            this.source.stop();
-            this.playBtn.disabled = false;
-            this.isPlaying = false;
-            this.pausedTime = 0;
-            this.updateTimer();
+            try {
+                this.audioContext.suspend();
+                this.source.stop();
+                this.playBtn.disabled = false;
+                this.isPlaying = false;
+                this.pausedTime = 0;
+                this.updateTimer();
+                this.showStatus('Stopped', 'info');
+            } catch (error) {
+                console.error('Error stopping audio:', error);
+                this.showStatus('Error stopping playback', 'error');
+            }
         });
 
         this.loopToggle.addEventListener('change', () => {
@@ -496,6 +594,7 @@ class WaveformVisualizer {
             e.preventDefault();
             e.stopPropagation();
             this.dragZone.classList.add('active');
+            this.showStatus('Drop audio file to load', 'info');
         };
 
         const handleDrop = async (e) => {
@@ -505,9 +604,18 @@ class WaveformVisualizer {
 
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('audio/')) {
-                const arrayBuffer = await file.arrayBuffer();
-                const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                this.loadAudioBuffer(audioBuffer);
+                this.showStatus('Loading audio file...', 'info');
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    this.loadAudioBuffer(audioBuffer);
+                    this.showStatus(`Loaded: ${file.name}`, 'success');
+                } catch (error) {
+                    console.error('Error loading dropped file:', error);
+                    this.showStatus('Error loading dropped file', 'error');
+                }
+            } else {
+                this.showStatus('Please drop a valid audio file', 'error');
             }
         };
 
@@ -590,49 +698,49 @@ class WaveformVisualizer {
     }
 
     loadAudioBuffer(audioBuffer) {
-        // Store buffer for seeking
-        this.currentBuffer = audioBuffer;
-        
-        // Enable progress slider
-        this.progressSlider.disabled = false;
-        this.progressSlider.value = 0;
-        
-        // Create audio source
-        if (this.source) {
-            this.source.disconnect();
-        }
-        this.source = this.audioContext.createBufferSource();
-        this.source.buffer = audioBuffer;
-        this.source.loop = this.loopToggle.checked;
-        
-        // Set initial playback rate
-        this.source.playbackRate.value = parseFloat(this.playbackSpeedControl.value);
-        
-        // Connect through EQ chain
-        if (this.source) {
-            this.source.disconnect();
-            let prevNode = this.source;
-            this.eqBands.forEach(filter => {
-                prevNode.connect(filter);
-                prevNode = filter;
-            });
-            prevNode.connect(this.analyser);
+        try {
+            // Store buffer for seeking
+            this.currentBuffer = audioBuffer;
+            
+            // Create new audio source
+            this.source = this.audioContext.createBufferSource();
+            this.source.buffer = audioBuffer;
+            
+            // Set loop state
+            this.source.loop = this.loopToggle.checked;
+            
+            // Set playback rate
+            this.source.playbackRate.value = parseFloat(this.playbackSpeedControl.value);
+            
+            // Connect through effects chain
+            this.source.connect(this.analyser);
             this.analyser.connect(this.gainNode);
+            
+            // Reset timer values
+            this.startTime = 0;
+            this.pausedTime = 0;
+            this.isPlaying = false;
+            
+            // Enable controls
+            this.playBtn.disabled = false;
+            this.pauseBtn.disabled = false;
+            this.stopBtn.disabled = false;
+            this.progressSlider.disabled = false;
+            
+            // Update timer display
+            this.updateTimer();
+            
+            // Start visualization
+            if (!this.isDrawing) {
+                this.isDrawing = true;
+                this.draw();
+            }
+
+            this.showStatus('Ready to play', 'success');
+        } catch (error) {
+            console.error('Error setting up audio:', error);
+            this.showStatus('Error setting up audio playback', 'error');
         }
-        
-        // Enable playback controls
-        this.playBtn.disabled = false;
-        this.pauseBtn.disabled = false;
-        this.stopBtn.disabled = false;
-        
-        // Start visualization without playback
-        this.draw();
-        
-        // Reset timer values
-        this.startTime = 0;
-        this.pausedTime = 0;
-        this.isPlaying = false;
-        this.updateTimer();
     }
 
     setupEqualizer() {
@@ -1552,9 +1660,25 @@ class WaveformVisualizer {
             });
         });
     }
+
+    showStatus(message, type = 'info', duration = 3000) {
+        this.statusMessage.textContent = message;
+        this.statusMessage.className = 'status-message visible ' + type;
+        clearTimeout(this.statusTimeout);
+        this.statusTimeout = setTimeout(() => {
+            this.statusMessage.className = 'status-message';
+        }, duration);
+    }
 }
 
 // Initialize visualizer when page loads
 window.addEventListener('load', () => {
-    new WaveformVisualizer();
+    try {
+        new WaveformVisualizer();
+    } catch (error) {
+        console.error('Error initializing visualizer:', error);
+        const statusMessage = document.getElementById('statusMessage');
+        statusMessage.textContent = 'Error initializing audio visualizer. Please reload the page or try a different browser.';
+        statusMessage.className = 'status-message visible error';
+    }
 }); 

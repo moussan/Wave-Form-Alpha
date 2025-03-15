@@ -150,6 +150,17 @@
             margin: 0;
         }
 
+        input[type="file"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
         .file-input-label {
             display: inline-block;
             padding: 10px 20px;
@@ -158,10 +169,16 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-align: center;
+            min-width: 150px;
         }
 
         .file-input-label:hover {
             background: rgba(255, 255, 255, 0.2);
+        }
+
+        .file-input-label:active {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .loop-control {
@@ -519,10 +536,74 @@
                 height: 24px;
             }
         }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .status-message.error {
+            background: rgba(255, 50, 50, 0.9);
+        }
+
+        .status-message.success {
+            background: rgba(50, 255, 50, 0.9);
+        }
+
+        .status-message.visible {
+            opacity: 1;
+        }
+
+        /* Enhanced control labels */
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-group label .hint {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* Loading indicator */
+        .loading-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading .loading-indicator {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
     <div class="drag-zone"></div>
+    <div class="status-message" id="statusMessage"></div>
     <div class="keyboard-shortcuts">
         <div class="shortcut-row"><span><kbd>Space</kbd> Play/Pause</span></div>
         <div class="shortcut-row"><span><kbd>←</kbd><kbd>→</kbd> Seek</span></div>
@@ -579,11 +660,11 @@
                         <input type="color" id="secondaryColor" value="#ff00ff">
                     </div>
                     <div class="control-group">
-                        <label for="volume">Volume</label>
+                        <label for="volume">Volume <span class="hint">0-100%</span></label>
                         <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
                     </div>
                     <div class="control-group">
-                        <label for="playbackSpeed">Playback Speed</label>
+                        <label for="playbackSpeed">Playback Speed <span class="hint">0.5x-2x</span></label>
                         <select id="playbackSpeed">
                             <option value="0.5">0.5x</option>
                             <option value="0.75">0.75x</option>
