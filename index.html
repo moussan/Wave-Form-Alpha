@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Creative Audio Waveform Visualizer</title>
     <style>
         * {
@@ -415,6 +415,110 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* Mobile-friendly styles */
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .controls-wrapper {
+                padding: 10px;
+            }
+
+            .playback-controls {
+                gap: 10px;
+            }
+
+            .playback-row {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .progress-container {
+                max-width: 100%;
+            }
+
+            .timer {
+                min-width: 80px;
+                font-size: 12px;
+            }
+
+            .equalizer-container {
+                position: static;
+                margin: 10px;
+                width: auto;
+            }
+
+            .eq-bands {
+                overflow-x: auto;
+                padding-bottom: 10px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .effects-container,
+            .midi-controls,
+            .recording-controls {
+                position: static;
+                margin: 10px;
+                width: auto;
+            }
+
+            input[type="range"] {
+                height: 30px; /* Larger touch target */
+            }
+
+            button,
+            select,
+            .file-input-label {
+                min-height: 44px; /* iOS minimum touch target size */
+                padding: 10px 15px;
+            }
+
+            .keyboard-shortcuts {
+                display: none; /* Hide keyboard shortcuts on mobile */
+            }
+
+            /* Collapsible sections for mobile */
+            .mobile-section {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 10px;
+            }
+
+            .mobile-section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                cursor: pointer;
+            }
+
+            .mobile-section-content {
+                display: none;
+                padding: 10px;
+            }
+
+            .mobile-section.active .mobile-section-content {
+                display: block;
+            }
+
+            /* Improved touch feedback */
+            button:active,
+            .file-input-label:active,
+            select:active {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+            /* Fix for iOS input styling */
+            input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 24px;
+                height: 24px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -430,58 +534,220 @@
     <canvas id="waveformCanvas"></canvas>
     
     <div class="controls-wrapper">
-        <div class="controls">
-            <div class="control-group">
-                <label for="visualMode">Visualization Mode</label>
-                <select id="visualMode">
-                    <option value="wave">Wave</option>
-                    <option value="bars">Bars</option>
-                    <option value="circles">Circles</option>
-                    <option value="spectrum">Spectrum</option>
-                    <option value="particles">Particles</option>
-                    <option value="spiral">Spiral</option>
-                    <option value="tunnel">Tunnel</option>
-                    <option value="fractal">Fractal</option>
-                    <option value="kaleidoscope">Kaleidoscope</option>
-                    <option value="waterfall">Waterfall</option>
-                    <option value="oscilloscope">Oscilloscope</option>
-                    <option value="vortex">Vortex</option>
-                    <option value="aurora">Aurora</option>
-                    <option value="waveform3D">3D Waveform</option>
-                </select>
+        <div class="mobile-section">
+            <div class="mobile-section-header">
+                <span>Visualization Controls</span>
+                <span class="toggle-icon">▼</span>
             </div>
-            <div class="control-group">
-                <label for="presets">Visualization Preset</label>
-                <select id="presets">
-                    <option value="default">Default</option>
-                    <option value="neon">Neon Nights</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="rainbow">Rainbow Wave</option>
-                    <option value="matrix">Matrix</option>
-                </select>
+            <div class="mobile-section-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="visualMode">Visualization Mode</label>
+                        <select id="visualMode">
+                            <option value="wave">Wave</option>
+                            <option value="bars">Bars</option>
+                            <option value="circles">Circles</option>
+                            <option value="spectrum">Spectrum</option>
+                            <option value="particles">Particles</option>
+                            <option value="spiral">Spiral</option>
+                            <option value="tunnel">Tunnel</option>
+                            <option value="fractal">Fractal</option>
+                            <option value="kaleidoscope">Kaleidoscope</option>
+                            <option value="waterfall">Waterfall</option>
+                            <option value="oscilloscope">Oscilloscope</option>
+                            <option value="vortex">Vortex</option>
+                            <option value="aurora">Aurora</option>
+                            <option value="waveform3D">3D Waveform</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="presets">Visualization Preset</label>
+                        <select id="presets">
+                            <option value="default">Default</option>
+                            <option value="neon">Neon Nights</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="rainbow">Rainbow Wave</option>
+                            <option value="matrix">Matrix</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="waveColor">Primary Color</label>
+                        <input type="color" id="waveColor" value="#00ff00">
+                    </div>
+                    <div class="control-group">
+                        <label for="secondaryColor">Secondary Color</label>
+                        <input type="color" id="secondaryColor" value="#ff00ff">
+                    </div>
+                    <div class="control-group">
+                        <label for="volume">Volume</label>
+                        <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="playbackSpeed">Playback Speed</label>
+                        <select id="playbackSpeed">
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="control-group">
-                <label for="waveColor">Primary Color</label>
-                <input type="color" id="waveColor" value="#00ff00">
+        </div>
+
+        <div class="mobile-section">
+            <div class="mobile-section-header">
+                <span>Equalizer</span>
+                <span class="toggle-icon">▼</span>
             </div>
-            <div class="control-group">
-                <label for="secondaryColor">Secondary Color</label>
-                <input type="color" id="secondaryColor" value="#ff00ff">
+            <div class="mobile-section-content">
+                <div class="equalizer-container">
+                    <div class="eq-header">
+                        <div class="eq-title">Equalizer</div>
+                        <select id="eqPreset" class="eq-preset-select">
+                            <option value="flat">Flat</option>
+                            <option value="rock">Rock</option>
+                            <option value="pop">Pop</option>
+                            <option value="jazz">Jazz</option>
+                            <option value="classical">Classical</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="acoustic">Acoustic</option>
+                            <option value="vocal">Vocal Boost</option>
+                            <option value="bass">Bass Boost</option>
+                        </select>
+                    </div>
+                    <div class="eq-bands">
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="60">
+                            <label>60Hz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="170">
+                            <label>170Hz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="310">
+                            <label>310Hz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="600">
+                            <label>600Hz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="1000">
+                            <label>1kHz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="3000">
+                            <label>3kHz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="6000">
+                            <label>6kHz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="12000">
+                            <label>12kHz</label>
+                        </div>
+                        <div class="eq-band">
+                            <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="16000">
+                            <label>16kHz</label>
+                        </div>
+                    </div>
+                    <div class="eq-footer">
+                        <button id="resetEq">Reset EQ</button>
+                        <button id="saveEqPreset">Save Custom Preset</button>
+                    </div>
+                </div>
             </div>
-            <div class="control-group">
-                <label for="volume">Volume</label>
-                <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+        </div>
+
+        <div class="mobile-section">
+            <div class="mobile-section-header">
+                <span>Effects</span>
+                <span class="toggle-icon">▼</span>
             </div>
-            <div class="control-group">
-                <label for="playbackSpeed">Playback Speed</label>
-                <select id="playbackSpeed">
-                    <option value="0.5">0.5x</option>
-                    <option value="0.75">0.75x</option>
-                    <option value="1" selected>1x</option>
-                    <option value="1.25">1.25x</option>
-                    <option value="1.5">1.5x</option>
-                    <option value="2">2x</option>
-                </select>
+            <div class="mobile-section-content">
+                <div class="effects-container">
+                    <div class="effects-title">Audio Effects</div>
+                    <div class="effects-controls">
+                        <div class="effect-group">
+                            <label for="reverbMix">Reverb</label>
+                            <input type="range" id="reverbMix" min="0" max="1" step="0.01" value="0">
+                            <select id="reverbType">
+                                <option value="hall">Hall</option>
+                                <option value="room">Room</option>
+                                <option value="plate">Plate</option>
+                                <option value="cave">Cave</option>
+                            </select>
+                        </div>
+                        <div class="effect-group">
+                            <label for="delayMix">Delay</label>
+                            <input type="range" id="delayMix" min="0" max="1" step="0.01" value="0">
+                            <input type="range" id="delayTime" min="0" max="1" step="0.01" value="0.3">
+                            <input type="range" id="delayFeedback" min="0" max="0.9" step="0.01" value="0.5">
+                        </div>
+                        <div class="effect-group">
+                            <label for="compressorThreshold">Compressor</label>
+                            <input type="range" id="compressorThreshold" min="-60" max="0" step="1" value="-24">
+                            <input type="range" id="compressorRatio" min="1" max="20" step="1" value="4">
+                            <input type="range" id="compressorKnee" min="0" max="40" step="1" value="30">
+                        </div>
+                        <div class="effect-group">
+                            <label for="distortionAmount">Distortion</label>
+                            <input type="range" id="distortionAmount" min="0" max="100" step="1" value="0">
+                            <select id="distortionType">
+                                <option value="soft">Soft Clip</option>
+                                <option value="hard">Hard Clip</option>
+                                <option value="fuzz">Fuzz</option>
+                                <option value="bitcrush">Bit Crush</option>
+                            </select>
+                        </div>
+                        <div class="effect-group">
+                            <label for="filterType">Filter</label>
+                            <select id="filterType">
+                                <option value="none">None</option>
+                                <option value="lowpass">Low Pass</option>
+                                <option value="highpass">High Pass</option>
+                                <option value="bandpass">Band Pass</option>
+                            </select>
+                            <input type="range" id="filterFreq" min="20" max="20000" step="1" value="1000">
+                            <input type="range" id="filterQ" min="0" max="10" step="0.1" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-section">
+            <div class="mobile-section-header">
+                <span>MIDI & Recording</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="mobile-section-content">
+                <div class="midi-controls">
+                    <div class="midi-title">MIDI Control</div>
+                    <div class="midi-status">No MIDI devices connected</div>
+                    <button id="midiSetup">Setup MIDI</button>
+                    <div class="midi-mappings"></div>
+                </div>
+                <div class="recording-controls">
+                    <div class="recording-title">Recording</div>
+                    <div class="recording-buttons">
+                        <button id="startRecording" disabled>Start Recording</button>
+                        <button id="stopRecording" disabled>Stop Recording</button>
+                        <button id="exportRecording" disabled>Export</button>
+                    </div>
+                    <div class="recording-format">
+                        <select id="recordingFormat">
+                            <option value="wav">WAV</option>
+                            <option value="mp3">MP3</option>
+                            <option value="ogg">OGG</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -513,137 +779,6 @@
                         Loop
                     </label>
                 </div>
-            </div>
-        </div>
-
-        <div class="equalizer-container">
-            <div class="eq-header">
-                <div class="eq-title">Equalizer</div>
-                <select id="eqPreset" class="eq-preset-select">
-                    <option value="flat">Flat</option>
-                    <option value="rock">Rock</option>
-                    <option value="pop">Pop</option>
-                    <option value="jazz">Jazz</option>
-                    <option value="classical">Classical</option>
-                    <option value="electronic">Electronic</option>
-                    <option value="acoustic">Acoustic</option>
-                    <option value="vocal">Vocal Boost</option>
-                    <option value="bass">Bass Boost</option>
-                </select>
-            </div>
-            <div class="eq-bands">
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="60">
-                    <label>60Hz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="170">
-                    <label>170Hz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="310">
-                    <label>310Hz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="600">
-                    <label>600Hz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="1000">
-                    <label>1kHz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="3000">
-                    <label>3kHz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="6000">
-                    <label>6kHz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="12000">
-                    <label>12kHz</label>
-                </div>
-                <div class="eq-band">
-                    <input type="range" class="eq-slider" min="-20" max="20" value="0" data-frequency="16000">
-                    <label>16kHz</label>
-                </div>
-            </div>
-            <div class="eq-footer">
-                <button id="resetEq">Reset EQ</button>
-                <button id="saveEqPreset">Save Custom Preset</button>
-            </div>
-        </div>
-
-        <div class="effects-container">
-            <div class="effects-title">Audio Effects</div>
-            <div class="effects-controls">
-                <div class="effect-group">
-                    <label for="reverbMix">Reverb</label>
-                    <input type="range" id="reverbMix" min="0" max="1" step="0.01" value="0">
-                    <select id="reverbType">
-                        <option value="hall">Hall</option>
-                        <option value="room">Room</option>
-                        <option value="plate">Plate</option>
-                        <option value="cave">Cave</option>
-                    </select>
-                </div>
-                <div class="effect-group">
-                    <label for="delayMix">Delay</label>
-                    <input type="range" id="delayMix" min="0" max="1" step="0.01" value="0">
-                    <input type="range" id="delayTime" min="0" max="1" step="0.01" value="0.3">
-                    <input type="range" id="delayFeedback" min="0" max="0.9" step="0.01" value="0.5">
-                </div>
-                <div class="effect-group">
-                    <label for="compressorThreshold">Compressor</label>
-                    <input type="range" id="compressorThreshold" min="-60" max="0" step="1" value="-24">
-                    <input type="range" id="compressorRatio" min="1" max="20" step="1" value="4">
-                    <input type="range" id="compressorKnee" min="0" max="40" step="1" value="30">
-                </div>
-                <div class="effect-group">
-                    <label for="distortionAmount">Distortion</label>
-                    <input type="range" id="distortionAmount" min="0" max="100" step="1" value="0">
-                    <select id="distortionType">
-                        <option value="soft">Soft Clip</option>
-                        <option value="hard">Hard Clip</option>
-                        <option value="fuzz">Fuzz</option>
-                        <option value="bitcrush">Bit Crush</option>
-                    </select>
-                </div>
-                <div class="effect-group">
-                    <label for="filterType">Filter</label>
-                    <select id="filterType">
-                        <option value="none">None</option>
-                        <option value="lowpass">Low Pass</option>
-                        <option value="highpass">High Pass</option>
-                        <option value="bandpass">Band Pass</option>
-                    </select>
-                    <input type="range" id="filterFreq" min="20" max="20000" step="1" value="1000">
-                    <input type="range" id="filterQ" min="0" max="10" step="0.1" value="1">
-                </div>
-            </div>
-        </div>
-
-        <div class="midi-controls">
-            <div class="midi-title">MIDI Control</div>
-            <div class="midi-status">No MIDI devices connected</div>
-            <button id="midiSetup">Setup MIDI</button>
-            <div class="midi-mappings"></div>
-        </div>
-
-        <div class="recording-controls">
-            <div class="recording-title">Recording</div>
-            <div class="recording-buttons">
-                <button id="startRecording" disabled>Start Recording</button>
-                <button id="stopRecording" disabled>Stop Recording</button>
-                <button id="exportRecording" disabled>Export</button>
-            </div>
-            <div class="recording-format">
-                <select id="recordingFormat">
-                    <option value="wav">WAV</option>
-                    <option value="mp3">MP3</option>
-                    <option value="ogg">OGG</option>
-                </select>
             </div>
         </div>
     </div>

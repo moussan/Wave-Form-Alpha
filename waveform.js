@@ -109,6 +109,13 @@ class WaveformVisualizer {
         
         // Add recording capabilities
         this.setupRecording();
+        
+        // Add mobile section toggle handlers
+        this.setupMobileSections();
+        
+        // Initialize visualizer
+        this.setupCanvas();
+        window.addEventListener('resize', () => this.setupCanvas());
     }
 
     setupCanvas() {
@@ -1516,6 +1523,34 @@ class WaveformVisualizer {
         }
 
         this.gradientAngle += 0.01;
+    }
+
+    setupMobileSections() {
+        const sections = document.querySelectorAll('.mobile-section');
+        sections.forEach(section => {
+            const header = section.querySelector('.mobile-section-header');
+            const content = section.querySelector('.mobile-section-content');
+            
+            // Show main controls by default
+            if (section.querySelector('.controls')) {
+                section.classList.add('active');
+            }
+            
+            header.addEventListener('click', () => {
+                section.classList.toggle('active');
+                const icon = header.querySelector('.toggle-icon');
+                icon.textContent = section.classList.contains('active') ? '▼' : '▶';
+            });
+            
+            // Add touch feedback
+            header.addEventListener('touchstart', () => {
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+            
+            header.addEventListener('touchend', () => {
+                header.style.background = 'rgba(255, 255, 255, 0.05)';
+            });
+        });
     }
 }
 
